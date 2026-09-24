@@ -303,7 +303,7 @@
     padding:5px 12px;border-radius:999px;background:#fff;border:1px solid var(--rule);color:var(--ink-soft);cursor:pointer;}
   .listen-btn:hover{border-color:var(--terracotta);color:var(--terracotta);}
   .listen-btn.speaking{background:var(--terracotta);border-color:var(--terracotta);color:#fff;}
-  .listen-note{font-size:10.5px;color:var(--ink-soft);font-style:italic;align-self:center;}
+  .listen-btn.listen-link{ text-decoration:none; background:#f2e6c8; border-color:#c79a3d; color:#6b5322; }
   .panel-tabs{display:flex;border-top:1px solid var(--rule);margin-top:16px;}
   .panel-tab{flex:1;text-align:center;padding:9px 0;font-size:12px;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;letter-spacing:0.02em;}
   .panel-tab.active{color:var(--terracotta);border-bottom-color:var(--terracotta);font-weight:600;}
@@ -443,7 +443,7 @@
     <button type="button" id="atlasOpenBtn" class="atlas-open-btn">Name where you are — open the Psalm Atlas →</button>
   </div>
 
-  <footer>Tributary Carriage — every life is a tributary joining the great river of God's covenant love.<br><br><small>© 2024–2025 Jeong-a Hwang (황정아) · Tributary Carriage. All rights reserved.<br>The concept and design of arranging the Psalms as a six-faced cube — including the emotional stage classification, coordinate system, and visual architecture — are original works by the author.<br>All photographs and handwritten texts are original works by the author.<br>English text: World English Bible (public domain, Psalms 1–69); remaining psalms in the editor's own rendering.<br>Hebrew text: Westminster Leningrad Codex (public domain).</small></footer>
+  <footer>Tributary Carriage — every life is a tributary joining the great river of God's covenant love.<br><br><small>© 2024–2025 Jeong-a Hwang (황정아) · Tributary Carriage. All rights reserved.<br>The concept and design of arranging the Psalms as a six-faced cube — including the emotional stage classification, coordinate system, and visual architecture — are original works by the author.<br>All photographs and handwritten texts are original works by the author.<br>English text: World English Bible (public domain, Psalms 1–69); remaining psalms in the editor's own rendering.<br>Hebrew text: Westminster Leningrad Codex (public domain).<br>Hebrew audio: Abraham Shmuelof, courtesy Internet Archive (CC BY-NC-ND 4.0).</small></footer>
 
 </div>
 
@@ -1140,7 +1140,7 @@ function speakPaced(text, voice, lang, btn, opts){
   next();
 }
 
-function buildListenRow(thread){
+function buildListenRow(thread, psalmNum){
   const row = document.getElementById('listenRow');
   if(!row || !thread) return;
   if(!('speechSynthesis' in window)){
@@ -1149,14 +1149,19 @@ function buildListenRow(thread){
   }
   if(!VOICES_READY) pickVoices();
 
+  const psalmPadded = String(psalmNum).padStart(3,'0');
+  const shmuelofUrl = `https://archive.org/download/HebBible_AShmuelof/hbofPsa_${psalmPadded}.ogg`;
+
   let html = '';
   if(HEB_VOICE && thread.hebrew) html += '<button type="button" class="listen-btn" data-mode="he">▶ Hebrew</button>';
   html += '<button type="button" class="listen-btn" data-mode="en">▶ English</button>';
+  html += `<a href="${shmuelofUrl}" target="_blank" class="listen-btn listen-link" title="Full psalm read by Abraham Shmuelof (Internet Archive)">♪ Shmuelof</a>`;
   if(!HEB_VOICE) html += '<span class="listen-note">no Hebrew voice on this device</span>';
   else html += '<span class="listen-note">read slowly, a pause at each verse</span>';
   row.innerHTML = html;
 
   row.querySelectorAll('.listen-btn').forEach(btn => {
+    if(btn.tagName === 'A') return;
     btn.addEventListener('click', () => {
       if(btn.classList.contains('speaking')){ if(btn._stop) btn._stop(); return; }
       row.querySelectorAll('.listen-btn').forEach(b => { if(b._stop) b._stop(); });
@@ -1306,7 +1311,7 @@ function renderPanel(cell, faceKey){
       head.closest('.stanza-item').classList.toggle('open');
     });
   });
-  buildListenRow(thread);
+  buildListenRow(thread, cell.psalm);
   const helixBtn = document.getElementById('openHelixBtn');
   if(helixBtn){
     helixBtn.addEventListener('click', () => openHelixModal());
